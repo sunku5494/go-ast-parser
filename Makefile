@@ -10,6 +10,9 @@ BINARY_NAME=go-ast-parser
 BUILD_DIR=bin
 CMD_DIR=./cmd/go-ast-parser
 
+# Output files
+JSON_FILE=./code_chunks.json
+
 .PHONY: build clean help
 
 # Default target
@@ -28,6 +31,7 @@ clean:
 	$(GOCLEAN)
 	@rm -rf $(BUILD_DIR)
 	@rm -f $(BINARY_NAME)
+	@rm -f $(JSON_FILE)
 
 # Show help
 help:
