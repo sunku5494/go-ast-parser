@@ -100,20 +100,24 @@ func processFileDeclarations(file *ast.File, pkg *packages.Package, filePath, pa
 		accessedSymbols := analyzer.ExtractAccessedSymbols(decl, pkg.TypesInfo)
 		metadata["accessed_symbols"] = accessedSymbols
 
-		chunk := processDeclaration(decl, pkg, declChunkCode, metadata, filePath, startPos, endPos)
-		if chunk != nil {
-			chunks = append(chunks, *chunk)
+		declChunks := processDeclaration(decl, pkg, declChunkCode, metadata, filePath, startPos, endPos)
+		if declChunks != nil {
+			chunks = append(chunks, declChunks...)
 		}
 	}
 
 	return chunks
 }
 
-// processDeclaration processes a single AST declaration and returns a ChromaDocument.
-func processDeclaration(decl ast.Decl, pkg *packages.Package, declChunkCode string, metadata map[string]interface{}, filePath string, startPos, endPos token.Position) *types.ChromaDocument {
+// processDeclaration processes a single AST declaration and returns ChromaDocuments.
+func processDeclaration(decl ast.Decl, pkg *packages.Package, declChunkCode string, metadata map[string]interface{}, filePath string, startPos, endPos token.Position) []types.ChromaDocument {
 	switch d := decl.(type) {
 	case *ast.FuncDecl:
-		return processFunctionDeclaration(d, pkg, declChunkCode, metadata, filePath, startPos, endPos)
+		chunk := processFunctionDeclaration(d, pkg, declChunkCode, metadata, filePath, startPos, endPos)
+		if chunk != nil {
+			return []types.ChromaDocument{*chunk}
+		}
+		return nil
 	case *ast.GenDecl:
 		return processGeneralDeclaration(d, pkg, declChunkCode, metadata, filePath, startPos, endPos)
 	default:
@@ -142,11 +146,13 @@ func processFunctionDeclaration(funcDecl *ast.FuncDecl, pkg *packages.Package, d
 	}
 }
 
-// processGeneralDeclaration processes type, const, and var declarations.
-func processGeneralDeclaration(genDecl *ast.GenDecl, pkg *packages.Package, declChunkCode string, metadata map[string]interface{}, filePath string, startPos, endPos token.Position) *types.ChromaDocument {
+// processGeneralDeclaration processes type, const, and var declarations and returns all chunks.
+func processGeneralDeclaration(genDecl *ast.GenDecl, pkg *packages.Package, declChunkCode string, metadata map[string]interface{}, filePath string, startPos, endPos token.Position) []types.ChromaDocument {
 	if genDecl.Tok == token.IMPORT {
 		return nil // Skip import declarations
 	}
+
+	var chunks []types.ChromaDocument
 
 	// Process each specification in the general declaration
 	for _, spec := range genDecl.Specs {
@@ -155,11 +161,11 @@ func processGeneralDeclaration(genDecl *ast.GenDecl, pkg *packages.Package, decl
 		
 		chunk := processSpecification(spec, genDecl, pkg, metadata, filePath, specStartPos, specEndPos)
 		if chunk != nil {
-			return chunk
+			chunks = append(chunks, *chunk)
 		}
 	}
 
-	return nil
+	return chunks
 }
 
 // processSpecification processes individual specifications (type, const, var).
