@@ -175,7 +175,6 @@ func processSpecification(spec ast.Spec, genDecl *ast.GenDecl, pkg *packages.Pac
 	for k, v := range baseMetadata {
 		specMetadata[k] = v
 	}
-	specMetadata["declaration_kind"] = genDecl.Tok.String()
 
 	switch s := spec.(type) {
 	case *ast.TypeSpec:
@@ -191,7 +190,6 @@ func processSpecification(spec ast.Spec, genDecl *ast.GenDecl, pkg *packages.Pac
 func processTypeSpecification(typeSpec *ast.TypeSpec, pkg *packages.Package, specMetadata map[string]interface{}, filePath string, specStartPos, specEndPos token.Position) *types.ChromaDocument {
 	entityName := typeSpec.Name.Name
 	specMetadata["entity_name"] = entityName
-	specMetadata["type_definition"] = analyzer.GetTypeString(typeSpec.Type, pkg.TypesInfo)
 
 	if _, isStruct := typeSpec.Type.(*ast.StructType); isStruct {
 		specMetadata["type_category"] = "struct"

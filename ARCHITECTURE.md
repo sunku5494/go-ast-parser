@@ -30,7 +30,7 @@ The Go AST Parser is a modular command-line tool that analyzes Go projects and e
 graph TB
     %% Input/Output
     INPUT[["Go Project Path<br/>(CLI Input)"]]
-    OUTPUT[["code_chunks.json<br/>(119MB Output)"]]
+    OUTPUT[["code_chunks.json<br/>"]]
     
     %% Main Entry Point
     MAIN["cmd/go-ast-parser/main.go<br/>🚀 CLI Entry Point<br/>• Flag parsing<br/>• Input validation<br/>• Orchestration"]
@@ -122,7 +122,7 @@ flowchart TD
     
     SERIALIZE["📤 Serialize to JSON<br/>json.MarshalIndent<br/>Pretty formatting"]
     
-    WRITE_FILE["💾 Write to File<br/>code_chunks.json<br/>(119MB output)"]
+    WRITE_FILE["💾 Write to File<br/>code_chunks.json<br/>"]
     
     SUCCESS([✅ Success: Chunks Extracted])
     
@@ -164,7 +164,7 @@ flowchart TD
     "accessed_symbols": ["package.Symbol"],
     "entity_type": "function|method",
     "entity_name": "FunctionName",
-    "declaration_kind": "type|const|var",
+    "type_category": "struct|interface|alias_or_basic", // for type declarations
     "type": "string|int|CustomType",
     "receiver_type": "ReceiverType" // for methods only
   }
@@ -172,27 +172,6 @@ flowchart TD
 ```
 
 ---
-
-## 🚀 Usage & Build Instructions
-
-### Building the Project
-```bash
-# Build using Makefile
-make build
-
-# Manual build
-go build -o bin/go-ast-parser ./cmd/go-ast-parser
-```
-
-### Running the Tool
-```bash
-# Analyze a Go project
-./bin/go-ast-parser -path /path/to/go/project
-
-# Output: code_chunks.json (119MB)
-```
----
-
 
 ## 📝 Implementation Notes
 
@@ -206,7 +185,6 @@ go build -o bin/go-ast-parser ./cmd/go-ast-parser
 ### Dependencies:
 - **golang.org/x/tools/go/packages** - Official Go package loading
 - **Standard Library** - go/ast, go/token, go/types for AST processing
-- **No External Runtime Dependencies** - Self-contained binary
 
 ---
 
