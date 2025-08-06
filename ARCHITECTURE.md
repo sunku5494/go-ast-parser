@@ -162,10 +162,8 @@ flowchart TD
     "package_name": "main",
     "is_vendored": false,
     "accessed_symbols": ["package.Symbol"],
-    "entity_type": "function|method",
-    "entity_name": "FunctionName",
-    "type_category": "struct|interface|alias_or_basic", // for type declarations
-    "type": "string|int|CustomType",
+    "entity_type": "function|method|struct|interface|alias_or_basic|const|var",
+    "entity_name": "EntityName",
     "receiver_type": "ReceiverType" // for methods only
   }
 }

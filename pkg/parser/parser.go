@@ -180,7 +180,7 @@ func processSpecification(spec ast.Spec, genDecl *ast.GenDecl, pkg *packages.Pac
 	case *ast.TypeSpec:
 		return processTypeSpecification(s, pkg, specMetadata, filePath, specStartPos, specEndPos)
 	case *ast.ValueSpec:
-		return processValueSpecification(s, pkg, specMetadata, filePath, specStartPos, specEndPos)
+		return processValueSpecification(s, genDecl, pkg, specMetadata, filePath, specStartPos, specEndPos)
 	default:
 		return nil
 	}
@@ -192,11 +192,11 @@ func processTypeSpecification(typeSpec *ast.TypeSpec, pkg *packages.Package, spe
 	specMetadata["entity_name"] = entityName
 
 	if _, isStruct := typeSpec.Type.(*ast.StructType); isStruct {
-		specMetadata["type_category"] = "struct"
+		specMetadata["entity_type"] = "struct"
 	} else if _, isInterface := typeSpec.Type.(*ast.InterfaceType); isInterface {
-		specMetadata["type_category"] = "interface"
+		specMetadata["entity_type"] = "interface"
 	} else {
-		specMetadata["type_category"] = "alias_or_basic"
+		specMetadata["entity_type"] = "alias_or_basic"
 	}
 
 	// Read the original code for this specification
@@ -227,20 +227,19 @@ func processTypeSpecification(typeSpec *ast.TypeSpec, pkg *packages.Package, spe
 }
 
 // processValueSpecification processes const and var declarations.
-func processValueSpecification(valueSpec *ast.ValueSpec, pkg *packages.Package, specMetadata map[string]interface{}, filePath string, specStartPos, specEndPos token.Position) *types.ChromaDocument {
+func processValueSpecification(valueSpec *ast.ValueSpec, genDecl *ast.GenDecl, pkg *packages.Package, specMetadata map[string]interface{}, filePath string, specStartPos, specEndPos token.Position) *types.ChromaDocument {
 	var names []string
 	for _, name := range valueSpec.Names {
 		names = append(names, name.Name)
 	}
 	entityName := strings.Join(names, ", ")
 	specMetadata["entity_name"] = entityName
-
-	if valueSpec.Type != nil {
-		specMetadata["type"] = analyzer.GetTypeString(valueSpec.Type, pkg.TypesInfo)
-	} else if len(valueSpec.Values) > 0 {
-		if tv := pkg.TypesInfo.TypeOf(valueSpec.Values[0]); tv != nil {
-			specMetadata["type"] = tv.String()
-		}
+	
+	// Set entity_type based on the declaration token (const or var)
+	if genDecl.Tok == token.CONST {
+		specMetadata["entity_type"] = "const"
+	} else if genDecl.Tok == token.VAR {
+		specMetadata["entity_type"] = "var"
 	}
 
 	// Read the original code for this specification
